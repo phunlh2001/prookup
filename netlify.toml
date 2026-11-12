@@ -1,0 +1,44 @@
+# Netlify configuration for the Prookup frontend.
+# Docs: https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  command = "yarn build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # The app calls /api/*, which the proxy rule below forwards to the API.
+  VITE_API_BASE_URL = "/api"
+
+# ---------------------------------------------------------------------------
+# API proxy → Render (prookup-be).
+# Replace the host with your Render service URL. Proxying (status 200) keeps
+# the API on the same origin as the site, so no CORS setup is needed.
+# Note: on Render's free plan the first request after idling can take
+# 30–60 s while the service wakes up.
+# ---------------------------------------------------------------------------
+[[redirects]]
+  from = "/api/*"
+  to = "https://prookup-be.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# Product detail pages use hash URLs (#/product/:id), so no SPA fallback
+# rewrite is required.
+
+# ---------------------------------------------------------------------------
+# Headers
+# ---------------------------------------------------------------------------
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    # Vite emits content-hashed filenames, so these can be cached forever.
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
