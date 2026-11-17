@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card'
 import { TooltipProvider } from '@/components/ui/misc'
 import { DashboardHeader } from '@/features/dashboard/dashboard-header'
 import { DashboardPage } from '@/features/dashboard/dashboard-page'
+import { FavoritesPage } from '@/features/favorites/favorites-page'
 import { ProductDetail } from '@/features/products/product-detail'
 import { useHashRoute } from '@/hooks/use-hash-route'
 import { useResearchStore } from '@/stores/research-store'
@@ -59,6 +60,7 @@ export default function App() {
   const snapshot = useResearchStore((s) => s.snapshot)
   const status = useResearchStore((s) => s.status)
   const selected = useUiStore((s) => s.selectedProductId)
+  const view = useUiStore((s) => s.view)
   useHashRoute()
 
   useEffect(() => {
@@ -87,6 +89,8 @@ export default function App() {
     )
   } else if (selected && snapshot) {
     content = <ProductDetail productId={selected} />
+  } else if (view === 'favorites') {
+    content = <FavoritesPage />
   } else {
     content = <DashboardPage />
   }

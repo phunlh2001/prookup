@@ -36,6 +36,9 @@ Open any product for a full research page:
 ### Get recommendations
 The sidebar always shows the **top 3 products** worth researching further, with their sourcing cost, suggested price, gross profit and margin. These are recalculated from the latest research every time, never hand-picked.
 
+### Save favorites
+Click the heart on any product, whether on its card, its list row or its research page, to save it in one click. The **Favorites** tab in the sidebar collects every saved product, most recent first, with its live score and pricing. Removing a favorite can be undone straight from the notification. Favorites are remembered in your browser and survive daily research refreshes.
+
 ### Use your own costs
 Advertising cost per order, target margin, payment fees, default shipping and minimum markup are all editable. Changing one updates every price, profit, score and recommendation in the app instantly, and your settings are remembered in your browser.
 

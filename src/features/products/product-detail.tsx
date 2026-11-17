@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PricingAssumptionsPanel } from '@/features/pricing/pricing-assumptions'
 import { PricingBreakdown } from '@/features/pricing/pricing-breakdown'
+import { FavoriteButton } from '@/features/favorites/favorite-button'
 import { InterestChart } from '@/features/research/interest-chart'
 import { RegionInterest } from '@/features/research/region-interest'
 import { ResearchSources } from '@/features/research/research-sources'
@@ -76,12 +77,13 @@ function MarketOpportunity({ p }: { p: Product }) {
 export function ProductDetail({ productId }: { productId: string }) {
   const { products, nicheById } = useResearchData()
   const selectProduct = useUiStore((s) => s.selectProduct)
+  const fromView = useUiStore((s) => s.view)
   const p = products.find((x) => x.id === productId)
 
   const back = (
     <Button variant="ghost" size="sm" onClick={() => selectProduct(null)} className="-ml-2">
       <ArrowLeft />
-      Back to market overview
+      {fromView === 'favorites' ? 'Back to favorites' : 'Back to market overview'}
     </Button>
   )
 
@@ -131,7 +133,10 @@ export function ProductDetail({ productId }: { productId: string }) {
               <OpportunityBadge level={p.score.level} />
               {isSimulatedProduct(p) && <SimulatedBadge />}
             </div>
-            <h1 className="mt-1.5 text-2xl font-bold tracking-tight text-foreground">{p.name}</h1>
+            <div className="mt-1.5 flex flex-wrap items-start justify-between gap-3">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">{p.name}</h1>
+              <FavoriteButton productId={p.id} productName={p.name} variant="labeled" />
+            </div>
             <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">{p.description}</p>
             <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
               {p.characteristics.map((c) => (

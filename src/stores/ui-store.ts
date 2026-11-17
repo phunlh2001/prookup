@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { readProductHash } from '@/utils/route'
+import { readRoute, type MainView } from '@/utils/route'
 import type { NicheFilter, ProductFilters, ProductSort, ViewMode } from '@/types'
 
 export const DEFAULT_PRODUCT_FILTERS: ProductFilters = {
@@ -16,6 +16,8 @@ interface UiState {
   productFilters: ProductFilters
   sort: ProductSort
   viewMode: ViewMode
+  /** Page shown in the main area when no product is open. */
+  view: MainView
   selectedProductId: string | null
   mobileSidebarOpen: boolean
 
@@ -27,6 +29,8 @@ interface UiState {
   setViewMode: (v: ViewMode) => void
   /** Opens the research detail for a product (null = back to dashboard). */
   selectProduct: (id: string | null) => void
+  /** Switch the main area to a page (closes any open product). */
+  showView: (view: MainView) => void
   /** Jump to the product explorer filtered to a niche. */
   focusNiche: (nicheId: string) => void
   setMobileSidebarOpen: (open: boolean) => void
@@ -38,7 +42,10 @@ export const useUiStore = create<UiState>((set) => ({
   productFilters: DEFAULT_PRODUCT_FILTERS,
   sort: 'opportunity',
   viewMode: 'grid',
-  selectedProductId: readProductHash(),
+  ...(() => {
+    const r = readRoute()
+    return { view: r.view, selectedProductId: r.productId }
+  })(),
   mobileSidebarOpen: false,
 
   setSearch: (search) => set({ search }),
@@ -48,8 +55,10 @@ export const useUiStore = create<UiState>((set) => ({
   setSort: (sort) => set({ sort }),
   setViewMode: (viewMode) => set({ viewMode }),
   selectProduct: (selectedProductId) => set({ selectedProductId, mobileSidebarOpen: false }),
+  showView: (view) => set({ view, selectedProductId: null, mobileSidebarOpen: false }),
   focusNiche: (nicheId) =>
     set((s) => ({
+      view: 'dashboard',
       selectedProductId: null,
       mobileSidebarOpen: false,
       productFilters: { ...s.productFilters, nicheId },

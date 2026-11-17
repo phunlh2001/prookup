@@ -88,7 +88,7 @@ export function ProductExplorer() {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border bg-card shadow-card">
-          <table className="w-full min-w-[820px] text-left text-[13px]">
+          <table className="w-full min-w-[860px] text-left text-[13px]">
             <thead className="border-b bg-muted/50 text-xs text-muted-foreground">
               <tr>
                 <th className="px-4 py-2.5 font-medium">Product</th>
@@ -99,6 +99,9 @@ export function ProductExplorer() {
                 <th className="px-3 py-2.5 text-right font-medium">Gross profit</th>
                 <th className="px-3 py-2.5 text-right font-medium">Net margin</th>
                 <th className="px-4 py-2.5 text-right font-medium">Opportunity</th>
+                <th className="w-10">
+                  <span className="sr-only">Favorite</span>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y">

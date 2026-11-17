@@ -1,6 +1,7 @@
 import { ArrowUpRight } from 'lucide-react'
 import { GrowthText, OpportunityBadge, ScoreRing, SimulatedBadge, TrendBadge } from '@/components/indicators'
 import { ProductThumb } from '@/components/niche-icon'
+import { FavoriteButton } from '@/features/favorites/favorite-button'
 import { isSimulatedProduct } from '@/hooks/use-research-data'
 import { cn } from '@/lib/utils'
 import { useUiStore } from '@/stores/ui-store'
@@ -55,11 +56,14 @@ export function ProductCard({ product: p, niche }: { product: Product; niche?: N
         <Metric label="Net margin" value={pr ? formatRatio(pr.netMargin, 0) : '—'} />
       </dl>
 
-      <div className="mt-auto flex items-center justify-between border-t px-4 py-2.5">
+      <div className="mt-auto flex items-center justify-between border-t py-1.5 pr-2 pl-4">
         <OpportunityBadge level={p.score.level} />
-        <span className="flex items-center gap-1 text-xs font-medium text-primary opacity-70 transition-opacity group-hover:opacity-100">
-          Research <ArrowUpRight className="size-3.5" />
-        </span>
+        <div className="flex items-center gap-1">
+          <span className="flex items-center gap-1 text-xs font-medium text-primary opacity-70 transition-opacity group-hover:opacity-100">
+            Research <ArrowUpRight className="size-3.5" />
+          </span>
+          <FavoriteButton productId={p.id} productName={p.name} />
+        </div>
       </div>
     </article>
   )
@@ -98,6 +102,9 @@ export function ProductRow({ product: p, niche }: { product: Product; niche?: Ni
           <span className="tabular font-semibold">{p.score.total}</span>
           <OpportunityBadge level={p.score.level} className="hidden xl:inline-flex" />
         </div>
+      </td>
+      <td className="py-1 pr-2">
+        <FavoriteButton productId={p.id} productName={p.name} />
       </td>
     </tr>
   )
