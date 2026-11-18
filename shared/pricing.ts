@@ -1,4 +1,4 @@
-import type { PricingAssumptions, PricingResult } from './types.ts'
+import type { PricingAssumptions, PricingResult, UserPricingInput } from './types.ts'
 
 /**
  * Default modeled-cost assumptions. They are estimates, not facts — the UI
@@ -19,6 +19,37 @@ const round2 = (n: number) => Math.round(n * 100) / 100
 function charm(price: number): number {
   // Round up to the next x.99 (e.g. 23.41 → 23.99, 24.00 → 24.99).
   return Math.floor(price) + 0.99
+}
+
+/** Unit economics for a given selling price: gross, fees, ads and net. */
+function buildResult(
+  sourcingCost: number,
+  shippingCost: number,
+  shippingEstimated: boolean,
+  price: number,
+  priceDriver: PricingResult['priceDriver'],
+  a: PricingAssumptions,
+): PricingResult {
+  const landedCost = sourcingCost + shippingCost
+  const paymentFees = round2(price * a.paymentFeePct + a.paymentFeeFixed)
+  const grossProfit = round2(price - landedCost)
+  const netProfit = round2(grossProfit - paymentFees - a.adCostPerOrder)
+
+  return {
+    sourcingCost: round2(sourcingCost),
+    shippingCost: round2(shippingCost),
+    shippingEstimated,
+    landedCost: round2(landedCost),
+    paymentFees,
+    adCost: round2(a.adCostPerOrder),
+    recommendedPrice: price,
+    grossProfit,
+    grossMargin: price > 0 ? grossProfit / price : 0,
+    netProfit,
+    netMargin: price > 0 ? netProfit / price : 0,
+    priceDriver,
+    assumptions: { ...a },
+  }
 }
 
 /**
@@ -50,23 +81,26 @@ export function calculatePricing(
   if (a.charmPricing) price = charm(price)
   price = round2(price)
 
-  const paymentFees = round2(price * a.paymentFeePct + a.paymentFeeFixed)
-  const grossProfit = round2(price - landedCost)
-  const netProfit = round2(grossProfit - paymentFees - a.adCostPerOrder)
+  return buildResult(sourcingCost, shippingCost, shippingEstimated, price, priceDriver, a)
+}
 
-  return {
-    sourcingCost: round2(sourcingCost),
-    shippingCost: round2(shippingCost),
+/**
+ * Unit economics for prices the user entered themselves. The sell price is
+ * taken as-is (no charm rounding, no margin floor); payment fees and ad cost
+ * still come from the assumptions so net profit is comparable across products.
+ */
+export function calculateUserPricing(
+  input: UserPricingInput,
+  assumptions: PricingAssumptions = DEFAULT_PRICING_ASSUMPTIONS,
+): PricingResult {
+  const shippingEstimated = input.shippingCost == null
+  const shippingCost = input.shippingCost ?? assumptions.defaultShippingCost
+  return buildResult(
+    input.sourcingCost,
+    shippingCost,
     shippingEstimated,
-    landedCost: round2(landedCost),
-    paymentFees,
-    adCost: round2(a.adCostPerOrder),
-    recommendedPrice: price,
-    grossProfit,
-    grossMargin: price > 0 ? grossProfit / price : 0,
-    netProfit,
-    netMargin: price > 0 ? netProfit / price : 0,
-    priceDriver,
-    assumptions: { ...a },
-  }
+    round2(input.sellPrice),
+    'user-entered',
+    assumptions,
+  )
 }

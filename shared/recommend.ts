@@ -1,8 +1,9 @@
 import type { Product } from './types.ts'
 
 /**
- * Rank research results into recommendations. Only products with supplier
- * pricing, a positive modeled net profit and a non-declining trend qualify.
+ * Rank research results into recommendations. Only products with pricing
+ * (supplier-based, or entered by the user when no supplier offer exists), a
+ * positive modeled net profit and a non-declining trend qualify.
  * The ranking is always derived from data — never a fixed list.
  */
 export function recommendProducts(products: Product[], count = 3): Product[] {

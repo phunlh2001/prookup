@@ -65,7 +65,9 @@ export const OPPORTUNITY_LABELS: Record<OpportunityLevel, string> = {
 export function dataConfidence(input: ScoreInput): { value: number; level: ConfidenceLevel } {
   let value = 0
   value += input.trend.series.length >= 40 ? 30 : input.trend.series.length >= 12 ? 18 : 5
-  value += input.pricing ? (input.pricing.shippingEstimated ? 18 : 25) : 0
+  // User-entered prices count, but less than verified supplier data.
+  if (input.pricing?.priceDriver === 'user-entered') value += 12
+  else if (input.pricing) value += input.pricing.shippingEstimated ? 18 : 25
   value += input.competition ? 20 : 0
   value += input.trend.regions.length > 0 ? 10 : 0
   value += input.trend.relatedQueries.length > 0 ? 15 : 0

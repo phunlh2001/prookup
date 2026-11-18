@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
-import { calculatePricing } from '@shared/pricing.ts'
+import { calculatePricing, calculateUserPricing } from '@shared/pricing.ts'
 import { recommendProducts } from '@shared/recommend.ts'
 import { scoreProduct } from '@shared/scoring.ts'
+import { parseCustomPricing, useCustomResearchStore } from '@/stores/custom-research-store'
 import { usePricingStore } from '@/stores/pricing-store'
 import { useResearchStore } from '@/stores/research-store'
 import type { Niche, Product } from '@/types'
@@ -11,20 +12,25 @@ export const isSimulatedProduct = (p: Product) =>
 
 /**
  * Research data with pricing + opportunity scores recomputed from the user's
- * pricing assumptions, using the same shared engines as the server.
+ * pricing assumptions, using the same shared engines as the server. Products
+ * without a supplier offer use the prices the user entered, if any.
  */
 export function useResearchData() {
   const snapshot = useResearchStore((s) => s.snapshot)
   const assumptions = usePricingStore((s) => s.assumptions)
+  const customPricing = useCustomResearchStore((s) => s.pricing)
 
   return useMemo(() => {
     if (!snapshot) {
       return { products: [] as Product[], niches: [] as Niche[], recommended: [] as Product[], nicheById: new Map<string, Niche>() }
     }
     const products = snapshot.products.map((p) => {
+      const userInput = p.supplier ? null : parseCustomPricing(customPricing[p.id])
       const pricing = p.supplier
         ? calculatePricing(p.supplier.sourcingCost, p.supplier.shippingCost, assumptions)
-        : null
+        : userInput
+          ? calculateUserPricing(userInput, assumptions)
+          : null
       const score = scoreProduct({
         trend: p.trend,
         pricing,
@@ -43,5 +49,5 @@ export function useResearchData() {
       recommended: recommendProducts(products),
       nicheById: new Map(niches.map((n) => [n.id, n])),
     }
-  }, [snapshot, assumptions])
+  }, [snapshot, assumptions, customPricing])
 }

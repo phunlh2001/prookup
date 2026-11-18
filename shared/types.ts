@@ -137,9 +137,35 @@ export interface PricingResult {
   /** Gross profit − payment fees − ad cost. */
   netProfit: number
   netMargin: number
-  /** Which rule set the price ("target-margin" or "landed-multiple"). */
-  priceDriver: 'target-margin' | 'landed-multiple'
+  /**
+   * Which rule set the price: "target-margin" or "landed-multiple" for
+   * supplier-based recommendations, "user-entered" when the user typed the
+   * prices themselves (no supplier offer was found).
+   */
+  priceDriver: 'target-margin' | 'landed-multiple' | 'user-entered'
   assumptions: PricingAssumptions
+}
+
+/**
+ * Prices a user enters for a product the supplier provider could not match.
+ * Kept per user (in the browser), never shared or stored server-side.
+ */
+export interface UserPricingInput {
+  /** Unit cost the user found, USD. */
+  sourcingCost: number
+  /** Price the user intends to sell at, USD. */
+  sellPrice: number
+  /** Shipping to the US in USD; 0 = free shipping, null = use default assumption. */
+  shippingCost: number | null
+}
+
+/** A research link the user added themselves, e.g. an AliExpress listing. */
+export interface UserResearchSource {
+  id: string
+  label: string
+  url: string
+  /** ISO timestamp of when the user added it. */
+  addedAt: string
 }
 
 // ---------- Scoring ----------

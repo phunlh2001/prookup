@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PricingAssumptionsPanel } from '@/features/pricing/pricing-assumptions'
+import { CustomPricingForm } from '@/features/pricing/custom-pricing-form'
 import { PricingBreakdown } from '@/features/pricing/pricing-breakdown'
 import { FavoriteButton } from '@/features/favorites/favorite-button'
 import { InterestChart } from '@/features/research/interest-chart'
@@ -16,6 +17,7 @@ import { ResearchSources } from '@/features/research/research-sources'
 import { ScoreBreakdown } from '@/features/research/score-breakdown'
 import { isSimulatedProduct, useResearchData } from '@/hooks/use-research-data'
 import { cn } from '@/lib/utils'
+import { usePricingStore } from '@/stores/pricing-store'
 import { showNicheProducts, useUiStore } from '@/stores/ui-store'
 import type { DataSource, Product } from '@/types'
 import { formatDate, formatDateTime, formatUSD } from '@/utils/format'
@@ -77,6 +79,7 @@ function MarketOpportunity({ p }: { p: Product }) {
 export function ProductDetail({ productId }: { productId: string }) {
   const { products, nicheById } = useResearchData()
   const selectProduct = useUiStore((s) => s.selectProduct)
+  const assumptions = usePricingStore((s) => s.assumptions)
   const fromView = useUiStore((s) => s.view)
   const p = products.find((x) => x.id === productId)
 
@@ -233,7 +236,13 @@ export function ProductDetail({ productId }: { productId: string }) {
           <CardHeader>
             <CardTitle>Pricing analysis</CardTitle>
             <CardDescription>
-              {p.supplier ? <SourceLine source={p.supplier.source} /> : 'No supplier pricing available'}
+              {p.supplier ? (
+                <SourceLine source={p.supplier.source} />
+              ) : p.pricing ? (
+                'No supplier pricing available · using your own prices'
+              ) : (
+                'No supplier pricing available'
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -259,10 +268,11 @@ export function ProductDetail({ productId }: { productId: string }) {
                 </div>
               </div>
             ) : (
-              <p className="text-[13px] text-muted-foreground">
-                The supplier provider returned no matching offer, so pricing is not estimated. Prookup never invents
-                sourcing prices.
-              </p>
+              <CustomPricingForm
+                productId={p.id}
+                pricing={p.pricing}
+                defaultShipping={assumptions.defaultShippingCost}
+              />
             )}
           </CardContent>
         </Card>
@@ -301,7 +311,8 @@ export function ProductDetail({ productId }: { productId: string }) {
       </Card>
 
       <p className={cn('pb-4 text-center text-xs text-muted-foreground')}>
-        Recommended price {p.pricing ? formatUSD(p.pricing.recommendedPrice) : 'n/a'} and all scores are estimates for
+        {p.pricing?.priceDriver === 'user-entered' ? 'Your sell price' : 'Recommended price'}{' '}
+        {p.pricing ? formatUSD(p.pricing.recommendedPrice) : 'n/a'} and all scores are estimates for
         research purposes, not guaranteed business outcomes.
       </p>
     </div>
